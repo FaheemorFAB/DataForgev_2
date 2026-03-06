@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — DataForge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <style>
+        :root { --bg:#050505; --surface:#0A0A0B; --border:#1A1A1C; --accent:#2E5BFF; --glow:rgba(46,91,255,0.15); --txt:#ffffff; --txt-m:#666666; }
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--txt); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; }
+        .noise { position:fixed; inset:0; pointer-events:none; opacity:.03; z-index:9999; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+        .mesh { position:fixed; inset:0; z-index:-1; background:radial-gradient(circle at 20% 20%, var(--glow) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(20,10,50,.6) 0%, transparent 50%); }
+        .card { background:rgba(10,10,11,0.8); border:1px solid var(--border); border-radius:1.5rem; padding:2.5rem; width:100%; max-width:400px; backdrop-filter:blur(20px); }
+        .google-btn { display:flex; align-items:center; justify-content:center; gap:.75rem; width:100%; padding:.85rem 1.5rem; background:#fff; color:#1a1a1a; font-weight:700; font-size:.8rem; letter-spacing:.04em; border:none; border-radius:.75rem; cursor:pointer; text-decoration:none; transition:all .2s; }
+        .google-btn:hover { background:#f5f5f5; transform:translateY(-1px); box-shadow:0 8px 30px rgba(0,0,0,.3); }
+        .divider { display:flex; align-items:center; gap:1rem; margin:1.5rem 0; }
+        .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
+        .divider span { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--txt-m); }
+    </style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="mesh"></div>
+
+<div class="card">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 mb-8">
+        <div class="w-8 h-8 flex items-center justify-center rounded-sm" style="background:#fff">
+            <div class="w-4 h-4 rotate-45" style="background:#050505"></div>
+        </div>
+        <span class="font-black text-sm tracking-widest uppercase">DataForge</span>
+    </div>
+
+    <h1 class="text-2xl font-black tracking-tight mb-1">Sign in</h1>
+    <p class="text-sm mb-8" style="color:var(--txt-m)">to continue to your analytics dashboard</p>
+
+    {% if google_enabled %}
+    <a href="/login/google" class="google-btn">
+        <svg width="18" height="18" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        Continue with Google
+    </a>
+
+    {% else %}
+    <div class="p-4 rounded-xl" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)">
+        <p class="text-xs font-bold text-amber-400 mb-1">⚠ Google OAuth not configured</p>
+        <p class="text-xs" style="color:var(--txt-m)">Add <code class="text-amber-300 text-[10px]">GOOGLE_CLIENT_ID</code> and <code class="text-amber-300 text-[10px]">GOOGLE_CLIENT_SECRET</code> to your <code class="text-amber-300 text-[10px]">.env</code> file and restart the server.</p>
+    </div>
+    {% endif %}
+
+    <p class="text-center text-[10px] mt-6" style="color:var(--txt-m)">
+        By signing in you agree to our terms. Your data is processed locally and never stored externally.
+    </p>
+</div>
+</body>
+</html>

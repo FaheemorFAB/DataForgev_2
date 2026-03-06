@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects — DataForge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <style>
+        :root {
+            --bg:#050505; --surface:#0A0A0B; --border:#1A1A1C;
+            --accent:#2E5BFF; --txt:#ffffff; --txt-m:#666666;
+            --card:rgba(10,10,11,0.75); --nav:rgba(5,5,5,0.92);
+        }
+        html.light {
+            --bg:#e9e2e2; --surface:#d1caca; --border:#e2e2e6;
+            --accent:#08227e; --txt:#0a0a0b; --txt-m:#37373c;
+            --card:#c9c6c6; --nav:rgba(242,242,245,0.96);
+        }
+        *, *::before, *::after { box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--txt); min-height:100vh; display:flex; flex-direction:column; }
+        .noise { position:fixed; inset:0; pointer-events:none; opacity:.03; z-index:9999;
+            background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+        .gc { background:var(--card); border:1px solid var(--border); backdrop-filter:blur(20px); transition:border-color .15s, background .2s; }
+        .gc:hover { border-color:rgba(46,91,255,.35); }
+        .bp { background:var(--accent); color:#fff; font-weight:700; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; padding:.55rem 1.2rem; border-radius:.6rem; cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:.4rem; border:none; white-space:nowrap; }
+        .bp:hover { filter:brightness(1.12); transform:translateY(-1px); }
+        .bp:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+        .bg { background:transparent; border:1px solid var(--border); color:var(--txt-m); font-weight:700; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; padding:.55rem 1.1rem; border-radius:.6rem; cursor:pointer; transition:all .2s; white-space:nowrap; display:inline-flex; align-items:center; gap:.4rem; }
+        .bg:hover { border-color:var(--accent); color:var(--txt); }
+        .ibt { width:32px; height:32px; border-radius:.45rem; border:1px solid var(--border); background:transparent; cursor:pointer; color:var(--txt-m); display:flex; align-items:center; justify-content:center; transition:border-color .15s, color .15s; }
+        .ibt:hover { border-color:var(--accent); color:var(--txt); }
+        .sl { font-size:.58rem; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--txt-m); }
+        .spin { animation:spin .8s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        [x-cloak] { display:none !important; }
+        .badge { display:inline-flex; align-items:center; gap:.3rem; font-size:.65rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:.25rem .6rem; border-radius:999px; }
+        .scrollbar-thin::-webkit-scrollbar { width:3px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background:transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background:var(--border); border-radius:10px; }
+    </style>
+</head>
+<body x-data="projectsApp()" x-init="init()" x-cloak>
+<div class="noise"></div>
+
+<!-- NAV -->
+<nav class="sticky top-0 z-30 flex items-center px-5 gap-3 border-b flex-shrink-0"
+     style="background:var(--nav);border-color:var(--border);height:52px;backdrop-filter:blur(16px)">
+    <a href="/" class="flex items-center gap-2.5 no-underline flex-shrink-0">
+        <div class="w-7 h-7 flex items-center justify-center rounded-sm" style="background:var(--txt)">
+            <div class="w-3.5 h-3.5 rotate-45" style="background:var(--bg)"></div>
+        </div>
+        <span class="font-black text-[11px] tracking-widest uppercase hidden sm:block" style="color:var(--txt)">DataForge</span>
+    </a>
+
+    <div class="w-px h-5 flex-shrink-0" style="background:var(--border)"></div>
+    <span class="font-black text-[11px] tracking-widest uppercase" style="color:var(--txt-m)">Projects</span>
+
+    <div class="flex-1"></div>
+
+    <!-- search -->
+    <div class="relative hidden sm:block">
+        <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none" style="color:var(--txt-m)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input x-model="search" placeholder="Search projects…"
+            class="pl-7 pr-3 py-1.5 rounded-lg text-[11px] font-medium outline-none w-44"
+            style="background:var(--surface);border:1px solid var(--border);color:var(--txt)">
+    </div>
+
+    <button @click="toggleTheme()" class="ibt" title="Toggle theme">
+        <svg x-show="darkMode" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg x-show="!darkMode" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+
+    <a href="/" class="bg">+ New Upload</a>
+
+    <!-- user -->
+    {% if user and user.is_authenticated %}
+    <div class="flex items-center gap-2 pl-2 pr-2 py-1 rounded-lg border flex-shrink-0" style="border-color:var(--border)">
+        {% if user.avatar %}
+        <img src="{{ user.avatar }}" class="w-6 h-6 rounded-full object-cover" alt="">
+        {% else %}
+        <div class="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black" style="background:var(--accent);color:#fff">{{ (user.name or 'U')[0].upper() }}</div>
+        {% endif %}
+        <span class="hidden sm:block font-bold text-[11px] max-w-[80px] truncate" style="color:var(--txt)">{{ user.name or user.email or 'User' }}</span>
+    </div>
+    {% endif %}
+</nav>
+
+<!-- MAIN -->
+<main class="flex-1 max-w-5xl mx-auto w-full px-5 py-8">
+
+    <!-- Header row -->
+    <div class="flex items-end justify-between mb-8 flex-wrap gap-4">
+        <div>
+            <h1 class="text-3xl font-black uppercase tracking-tight">Your Projects</h1>
+            <p class="text-xs mt-1" style="color:var(--txt-m)">Resume any previous analysis with full context — cleaned data, EDA, models and chat history</p>
+        </div>
+        <template x-if="!loading">
+            <span class="font-mono text-xs px-3 py-1.5 rounded-full font-bold"
+                  style="background:rgba(46,91,255,.1);color:var(--accent)"
+                  x-text="filtered.length + ' / ' + projects.length + ' projects'"></span>
+        </template>
+    </div>
+
+    <!-- Loading -->
+    <template x-if="loading">
+        <div class="flex items-center justify-center gap-3 py-32" style="color:var(--txt-m)">
+            <svg class="w-5 h-5 spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <span class="font-bold uppercase tracking-widest text-sm">Loading projects…</span>
+        </div>
+    </template>
+
+    <!-- Empty -->
+    <template x-if="!loading && projects.length === 0">
+        <div class="flex flex-col items-center justify-center gap-5 py-32 text-center">
+            <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background:rgba(46,91,255,.07);border:1px solid rgba(46,91,255,.15)">
+                <svg class="w-9 h-9" style="color:var(--accent)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+            <div>
+                <p class="font-black text-lg">No projects yet</p>
+                <p class="text-sm mt-1" style="color:var(--txt-m)">Upload a CSV to start your first project</p>
+            </div>
+            <a href="/" class="bp">+ Upload CSV</a>
+        </div>
+    </template>
+
+    <!-- No search results -->
+    <template x-if="!loading && projects.length > 0 && filtered.length === 0">
+        <div class="text-center py-20" style="color:var(--txt-m)">
+            <p class="font-bold">No projects match "<span x-text="search"></span>"</p>
+        </div>
+    </template>
+
+    <!-- Project grid -->
+    <template x-if="!loading && filtered.length > 0">
+        <div class="space-y-4">
+            <template x-for="p in filtered" :key="p.id">
+                <div class="gc rounded-2xl overflow-hidden"
+                     :class="expandedId === p.id ? 'border-[rgba(46,91,255,.4)]' : ''">
+
+                    <!-- Main row -->
+                    <div class="flex items-center gap-4 px-5 py-4 cursor-pointer"
+                         @click="expandedId = expandedId === p.id ? null : p.id">
+
+                        <!-- CSV badge -->
+                        <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white text-[10px] font-black flex-shrink-0"
+                             style="background:var(--accent)">CSV</div>
+
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <p class="font-bold text-sm truncate" style="color:var(--txt)" x-text="p.filename"></p>
+                                <template x-if="!p.has_raw">
+                                    <span class="badge" style="background:rgba(239,68,68,.08);color:#ef4444;border:1px solid rgba(239,68,68,.2)">⚠ Files missing</span>
+                                </template>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1 flex-wrap">
+                                <span class="font-mono text-[10px]" style="color:var(--txt-m)" x-text="p.rows.toLocaleString() + ' rows'"></span>
+                                <span style="color:var(--txt-m);opacity:.4">·</span>
+                                <span class="font-mono text-[10px]" style="color:var(--txt-m)" x-text="p.cols + ' cols'"></span>
+                                <span style="color:var(--txt-m);opacity:.4">·</span>
+                                <span class="text-[10px]" style="color:var(--txt-m)" x-text="p.missing_pct + '% missing'"></span>
+                                <span style="color:var(--txt-m);opacity:.4">·</span>
+                                <span class="text-[10px]" style="color:var(--txt-m)" x-text="p.time_ago"></span>
+                            </div>
+                            <!-- capability badges -->
+                            <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+                                <template x-if="p.has_clean">
+                                    <span class="badge" style="background:rgba(16,185,129,.08);color:#1e9902;border:1px solid rgba(16,185,129,.2)">✓ Cleaned</span>
+                                </template>
+                                <template x-if="p.has_eda">
+                                    <span class="badge" style="background:rgba(46,91,255,.08);color:var(--accent);border:1px solid rgba(46,91,255,.2)">✓ EDA Report</span>
+                                </template>
+                                <template x-if="p.has_model">
+                                    <span class="badge" style="background:rgba(245,158,11,.08);color:#f59e0b;border:1px solid rgba(245,158,11,.2)">✓ ML Model</span>
+                                </template>
+                                <template x-if="p.has_chat">
+                                    <span class="badge" style="background:rgba(139,92,246,.08);color:#8b5cf6;border:1px solid rgba(139,92,246,.2)">✓ AI Chat</span>
+                                </template>
+                                <template x-if="!p.has_clean && !p.has_eda && !p.has_model && !p.has_chat">
+                                    <span class="text-[10px]" style="color:var(--txt-m)">No analyses yet</span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-center gap-2 flex-shrink-0" @click.stop>
+                            <button @click="resumeProject(p)"
+                                :disabled="restoringId !== null || !p.has_raw"
+                                class="bp"
+                                :title="p.has_raw ? 'Resume this project' : 'Raw data file not found — re-upload to continue'">
+                                <template x-if="restoringId === p.id">
+                                    <svg class="w-3.5 h-3.5 spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                </template>
+                                <template x-if="restoringId !== p.id">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                </template>
+                                <span x-text="restoringId === p.id ? 'Loading…' : (p.has_raw ? 'Resume' : 'Missing')"></span>
+                            </button>
+                            <!-- expand chevron -->
+                            <button class="ibt flex-shrink-0" @click="expandedId = expandedId === p.id ? null : p.id">
+                                <svg class="w-3.5 h-3.5 transition-transform" :class="expandedId === p.id ? 'rotate-180' : ''"
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Expanded: analysis history -->
+                    <div x-show="expandedId === p.id" x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                         class="border-t px-5 py-4" style="border-color:var(--border);background:rgba(0,0,0,.15)">
+
+                        <p class="sl mb-3">Analysis History</p>
+
+                        <template x-if="p.analyses.length === 0">
+                            <p class="text-xs" style="color:var(--txt-m)">No analyses recorded for this project yet.</p>
+                        </template>
+
+                        <div class="space-y-2">
+                            <template x-for="(a, ai) in p.analyses" :key="ai">
+                                <div class="flex items-start gap-3">
+                                    <!-- type icon -->
+                                    <div class="w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-black flex-shrink-0 mt-0.5"
+                                         :style="typeStyle(a.type)">
+                                        <span x-text="typeIcon(a.type)"></span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs font-bold" style="color:var(--txt)" x-text="a.label"></span>
+                                            <span class="text-[9px]" style="color:var(--txt-m)" x-text="a.time_ago"></span>
+                                        </div>
+                                        <p class="text-[10px] mt-0.5 truncate" style="color:var(--txt-m)" x-text="a.summary"></p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <template x-if="!p.has_raw">
+                            <div class="mt-4 p-3 rounded-xl text-xs" style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);color:#ef4444">
+                                ⚠ This project was uploaded before persistence was enabled. Re-upload the CSV to continue working on it.
+                            </div>
+                        </template>
+                    </div>
+
+                </div>
+            </template>
+        </div>
+    </template>
+
+</main>
+
+<script>
+function projectsApp() {
+    return {
+        projects:    [],
+        loading:     true,
+        search:      '',
+        expandedId:  null,
+        restoringId: null,
+        darkMode:    true,
+
+        async init() {
+            const saved = localStorage.getItem('analyst-theme');
+            this.darkMode = saved !== 'light';
+            this.applyTheme();
+            await this.loadProjects();
+        },
+
+        toggleTheme() {
+            this.darkMode = !this.darkMode;
+            this.applyTheme();
+            localStorage.setItem('analyst-theme', this.darkMode ? 'dark' : 'light');
+        },
+        applyTheme() {
+            document.getElementById('html-root').classList.toggle('light', !this.darkMode);
+        },
+
+        get filtered() {
+            if (!this.search.trim()) return this.projects;
+            const q = this.search.toLowerCase();
+            return this.projects.filter(p => p.filename.toLowerCase().includes(q));
+        },
+
+        async loadProjects() {
+            this.loading = true;
+            try {
+                const res = await fetch('/api/projects');
+                if (res.ok) this.projects = await res.json();
+            } catch(e) {}
+            finally { this.loading = false; }
+        },
+
+        async resumeProject(p) {
+            if (!p.has_raw) return;
+            this.restoringId = p.id;
+            try {
+                const res  = await fetch('/api/restore/' + p.id, {method:'POST'});
+                const data = await res.json();
+                if (!res.ok || data.error) { alert('Could not restore: ' + (data.error || res.status)); return; }
+                sessionStorage.setItem('restore_state', JSON.stringify({
+                    clean_meta:   data.clean_meta  || null,
+                    automl_meta:  data.automl_meta || null,
+                    has_eda:      data.has_eda      || false,
+                    chat_history: data.chat_history || [],
+                }));
+                window.location.href = '/workspace';
+            } catch(e) { alert('Network error: ' + e.message); }
+            finally { this.restoringId = null; }
+        },
+
+        typeIcon(type) {
+            return {eda:'📊', automl:'🤖', clean:'🧹', query:'💬'}[type] || '•';
+        },
+        typeStyle(type) {
+            const m = {
+                eda:    'background:rgba(46,91,255,.12);color:var(--accent)',
+                automl: 'background:rgba(245,158,11,.12);color:#f59e0b',
+                clean:  'background:rgba(16,185,129,.12);color:#1e9902',
+                query:  'background:rgba(139,92,246,.12);color:#8b5cf6',
+            };
+            return m[type] || 'background:rgba(255,255,255,.06);color:var(--txt-m)';
+        },
+    }
+}
+</script>
+</body>
+</html>
